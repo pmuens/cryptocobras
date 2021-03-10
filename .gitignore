@@ -9,6 +9,7 @@ cache/
 .vscode/*
 !.vscode/tasks.json
 !.vscode/launch.json
+!.vscode/settings.json
 *.code-workspace
 
 ### Emacs ###
