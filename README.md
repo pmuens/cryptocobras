@@ -15,9 +15,6 @@ npm run watch
 # Build
 npm run build
 
-# Test
-npm run test
-
 # Format
 npm run format
 
