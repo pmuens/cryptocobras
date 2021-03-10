@@ -1,6 +1,6 @@
-# Template "TypeScript"
+# CryptoCobras
 
-Simplistic TypeScript project template.
+NFT example application for EVM-based Blockchains.
 
 ## Useful Commands
 
