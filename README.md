@@ -8,12 +8,14 @@ NFT example application for EVM-based Blockchains.
 # Setup
 npm install
 
-# Development
-npm run dev
-npm run watch
-
 # Build
 npm run build
+
+# Test
+npm run test
+
+# Deploy
+npm run deploy
 
 # Format
 npm run format
