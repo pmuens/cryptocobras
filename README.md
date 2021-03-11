@@ -10,7 +10,7 @@ You want to explore the [contracts](./contracts) and [tests](./tests) to see the
 
 1. `npx hardhat node`
 2. `npx hardhat deploy --network localhost`
-3. `npx hardhat buy --address <cobra-contract-address> --network localhost`
+3. `npx hardhat buy --address <cobra-token-contract-address> --network localhost`
 
 ## Useful Commands
 
