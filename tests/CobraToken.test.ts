@@ -46,7 +46,7 @@ describe('CobraToken', function () {
             expect(cobraId).to.equal(0)
             expect(matronId).to.equal(0)
             expect(sireId).to.equal(0)
-            expect(rarity).to.be.within(1, 255)
+            expect(rarity).to.be.within(0, 255)
             expect(genes).to.equal(1)
             resolve()
           }
@@ -80,7 +80,7 @@ describe('CobraToken', function () {
             expect(cobraId).to.equal(0)
             expect(matronId).to.equal(matronId)
             expect(sireId).to.equal(sireId)
-            expect(rarity).to.be.within(1, 255)
+            expect(rarity).to.be.within(0, 255)
             expect(genes).to.equal(5)
             resolve()
           }
