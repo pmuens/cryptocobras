@@ -8,6 +8,10 @@ NFT example application for EVM-based Blockchains.
 
 You want to explore the [contracts](./contracts) and [tests](./tests) to see the dApps APIs and their usages.
 
+1. `npx hardhat node`
+2. `npx hardhat deploy --network localhost`
+3. `npx hardhat buy --address <cobra-contract-address> --network localhost`
+
 ## Useful Commands
 
 ```sh
