@@ -8,8 +8,6 @@
     "clean": "rm -rf artifacts",
     "build": "run-s clean hardhat:compile",
     "test": "run-s hardhat:test",
-    "deploy": "run-s hardhat:deploy",
-    "hardhat:deploy": "hardhat run scripts/deploy.ts",
     "hardhat:compile": "hardhat compile",
     "hardhat:test": "hardhat test",
     "hardhat:node": "hardhat node",
