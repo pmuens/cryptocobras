@@ -6,11 +6,14 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract CobraToken is ERC721 {
     using Counters for Counters.Counter;
+
     Counters.Counter private _cobraIds;
+    Counters.Counter private _randNonce;
 
     struct Cobra {
         uint256 matronId;
         uint256 sireId;
+        uint8 rarity;
         uint8 genes;
     }
 
@@ -21,6 +24,7 @@ contract CobraToken is ERC721 {
         uint256 cobraId,
         uint256 matronId,
         uint256 sireId,
+        uint8 rarity,
         uint8 genes
     );
 
@@ -48,11 +52,18 @@ contract CobraToken is ERC721 {
             uint256,
             uint256,
             uint256,
+            uint8,
             uint8
         )
     {
         Cobra storage cobra = cobras[cobraId];
-        return (cobraId, cobra.matronId, cobra.sireId, cobra.genes);
+        return (
+            cobraId,
+            cobra.matronId,
+            cobra.sireId,
+            cobra.rarity,
+            cobra.genes
+        );
     }
 
     function listOwned() external view returns (uint256[] memory) {
@@ -83,6 +94,23 @@ contract CobraToken is ERC721 {
         return (uint8(matronId + sireId) % 6) + 1;
     }
 
+    function _generateRarity() internal returns (uint8) {
+        // TODO: Update source of randomness
+        _randNonce.increment();
+        uint256 rand =
+            uint256(
+                keccak256(
+                    abi.encodePacked(
+                        // solhint-disable-next-line not-rely-on-time
+                        block.timestamp,
+                        msg.sender,
+                        _randNonce.current()
+                    )
+                )
+            );
+        return uint8(rand);
+    }
+
     function _createCobra(
         uint256 matronId,
         uint256 sireId,
@@ -91,7 +119,8 @@ contract CobraToken is ERC721 {
         require(owner != address(0), "Owner shouldn't be the 0 address");
 
         uint8 genes = _generateGenes(matronId, sireId);
-        Cobra memory cobra = Cobra(matronId, sireId, genes);
+        uint8 rarity = _generateRarity();
+        Cobra memory cobra = Cobra(matronId, sireId, rarity, genes);
 
         cobras.push(cobra);
         uint256 cobraId = _cobraIds.current();
@@ -99,7 +128,14 @@ contract CobraToken is ERC721 {
 
         super._mint(owner, cobraId);
 
-        emit Birth(owner, cobraId, cobra.matronId, cobra.sireId, cobra.genes);
+        emit Birth(
+            owner,
+            cobraId,
+            cobra.matronId,
+            cobra.sireId,
+            cobra.rarity,
+            cobra.genes
+        );
 
         return cobraId;
     }

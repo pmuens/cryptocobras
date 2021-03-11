@@ -6,6 +6,8 @@ import '@nomiclabs/hardhat-waffle'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
 
+// TODO: Fix slow assertions on emitted event data
+
 describe('CobraToken', function () {
   let cobraToken: any
   let account1: any
@@ -32,18 +34,24 @@ describe('CobraToken', function () {
     })
 
     it('should emit a Birth event when buying a Cobra', async () => {
-      const cobraId = 0
-      const matronId = 0
-      const sireId = 0
-      const genes = 1
+      await cobraToken.connect(account1).buy({
+        value: ethers.utils.parseEther('0.2')
+      })
 
-      await expect(
-        cobraToken.connect(account1).buy({
-          value: ethers.utils.parseEther('0.2')
-        })
-      )
-        .to.emit(cobraToken, 'Birth')
-        .withArgs(account1.address, cobraId, matronId, sireId, genes)
+      await new Promise<void>((resolve) => {
+        cobraToken.once(
+          'Birth',
+          (owner: any, cobraId: any, matronId: any, sireId: any, rarity: any, genes: any) => {
+            expect(owner).to.equal(account1.address)
+            expect(cobraId).to.equal(0)
+            expect(matronId).to.equal(0)
+            expect(sireId).to.equal(0)
+            expect(rarity).to.be.within(1, 255)
+            expect(genes).to.equal(1)
+            resolve()
+          }
+        )
+      })
     })
   })
 
@@ -60,16 +68,24 @@ describe('CobraToken', function () {
     })
 
     it('should emit a Birth event when breeding a Cobra', async () => {
-      const cobraId = 0
-      const genes = 5
+      await cobraToken.connect(account1).breed(matronId, sireId, {
+        value: ethers.utils.parseEther('0.05')
+      })
 
-      await expect(
-        cobraToken.connect(account1).breed(matronId, sireId, {
-          value: ethers.utils.parseEther('0.05')
-        })
-      )
-        .to.emit(cobraToken, 'Birth')
-        .withArgs(account1.address, cobraId, matronId, sireId, genes)
+      await new Promise<void>((resolve) => {
+        cobraToken.once(
+          'Birth',
+          (owner: any, cobraId: any, matronId: any, sireId: any, rarity: any, genes: any) => {
+            expect(owner).to.equal(account1.address)
+            expect(cobraId).to.equal(0)
+            expect(matronId).to.equal(matronId)
+            expect(sireId).to.equal(sireId)
+            expect(rarity).to.be.within(1, 255)
+            expect(genes).to.equal(5)
+            resolve()
+          }
+        )
+      })
     })
   })
 
@@ -89,7 +105,8 @@ describe('CobraToken', function () {
       expect((await cobraToken.getDetails(cobraId))[0]).to.equal(cobraId)
       expect((await cobraToken.getDetails(cobraId))[1]).to.equal(matronId)
       expect((await cobraToken.getDetails(cobraId))[2]).to.equal(sireId)
-      expect((await cobraToken.getDetails(cobraId))[3]).to.equal(genes)
+      expect((await cobraToken.getDetails(cobraId))[3]).to.be.within(0, 255)
+      expect((await cobraToken.getDetails(cobraId))[4]).to.equal(genes)
     })
   })
 
