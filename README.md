@@ -2,6 +2,12 @@
 
 NFT example application for EVM-based Blockchains.
 
+**NOTE:** This NFT implementation is based on [openberry-ac/cryptovipers](https://github.com/openberry-ac/cryptovipers).
+
+## Usage
+
+You want to explore the [contracts](./contracts) and [tests](./tests) to see the dApps APIs and their usages.
+
 ## Useful Commands
 
 ```sh
