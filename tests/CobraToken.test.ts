@@ -102,11 +102,13 @@ describe('CobraToken', function () {
       const sireId = 0
       const genes = 1
 
-      expect((await cobraToken.getDetails(cobraId))[0]).to.equal(cobraId)
-      expect((await cobraToken.getDetails(cobraId))[1]).to.equal(matronId)
-      expect((await cobraToken.getDetails(cobraId))[2]).to.equal(sireId)
-      expect((await cobraToken.getDetails(cobraId))[3]).to.be.within(0, 255)
-      expect((await cobraToken.getDetails(cobraId))[4]).to.equal(genes)
+      const details = await cobraToken.getDetails(cobraId)
+
+      expect(details[0]).to.equal(cobraId)
+      expect(details[1]).to.equal(matronId)
+      expect(details[2]).to.equal(sireId)
+      expect(details[3]).to.be.within(0, 255)
+      expect(details[4]).to.equal(genes)
     })
   })
 
@@ -128,12 +130,14 @@ describe('CobraToken', function () {
 
     it('should return the owned Cobra ids', async () => {
       // Cobras owned by Account 1
-      expect((await cobraToken.connect(account1).listOwned()).length).to.equal(2)
-      expect((await cobraToken.connect(account1).listOwned())[0]).to.equal(0)
-      expect((await cobraToken.connect(account1).listOwned())[1]).to.equal(2)
+      const ownedBy1 = await cobraToken.connect(account1).listOwned()
+      expect(ownedBy1.length).to.equal(2)
+      expect(ownedBy1[0]).to.equal(0)
+      expect(ownedBy1[1]).to.equal(2)
       // Cobras owned by Account 2
-      expect((await cobraToken.connect(account2).listOwned()).length).to.equal(1)
-      expect((await cobraToken.connect(account2).listOwned())[0]).to.equal(1)
+      const ownedBy2 = await cobraToken.connect(account2).listOwned()
+      expect(ownedBy2.length).to.equal(1)
+      expect(ownedBy2[0]).to.equal(1)
     })
   })
 })
