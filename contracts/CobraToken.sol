@@ -15,8 +15,6 @@ contract CobraToken is ERC721 {
     Counters.Counter private _requestIds;
 
     struct Cobra {
-        uint256 matronId;
-        uint256 sireId;
         uint64 rarity;
         uint8 genes;
     }
@@ -25,14 +23,7 @@ contract CobraToken is ERC721 {
 
     event Success(address owner);
 
-    event Birth(
-        address owner,
-        uint256 cobraId,
-        uint256 matronId,
-        uint256 sireId,
-        uint64 rarity,
-        uint8 genes
-    );
+    event Birth(address owner, uint256 cobraId, uint64 rarity, uint8 genes);
 
     constructor(address oracleAddress) ERC721("Cobras", "CBR") {
         _oracle = Oracle(oracleAddress);
@@ -42,8 +33,6 @@ contract CobraToken is ERC721 {
         require(msg.value == 0.2 ether, "A Cobra costs exactly 0.2 ETH");
 
         address owner = msg.sender;
-        uint256 matronId = 0;
-        uint256 sireId = 0;
 
         uint64 min = 0;
         uint64 max = 999999999;
@@ -52,7 +41,7 @@ contract CobraToken is ERC721 {
         string memory jobName = "random";
         bytes memory jobArgs = abi.encode(min, max);
         string memory cbFuncName = "createCobra";
-        bytes memory customData = abi.encode(owner, matronId, sireId);
+        bytes memory customData = abi.encode(owner);
 
         _oracle.getExternalData(id, jobName, jobArgs, cbFuncName, customData);
         _requestIds.increment();
@@ -65,20 +54,12 @@ contract CobraToken is ERC721 {
         view
         returns (
             uint256,
-            uint256,
-            uint256,
             uint64,
             uint8
         )
     {
         Cobra storage cobra = cobras[cobraId];
-        return (
-            cobraId,
-            cobra.matronId,
-            cobra.sireId,
-            cobra.rarity,
-            cobra.genes
-        );
+        return (cobraId, cobra.rarity, cobra.genes);
     }
 
     function listOwned() external view returns (uint256[] memory) {
@@ -116,17 +97,12 @@ contract CobraToken is ERC721 {
 
         // Decoding the custom data passed along the response data
         address owner;
-        uint256 matronId;
-        uint256 sireId;
-        (owner, matronId, sireId) = abi.decode(
-            customData,
-            (address, uint256, uint256)
-        );
+        (owner) = abi.decode(customData, (address));
 
         require(owner != address(0), "Owner shouldn't be the 0 address");
 
-        uint8 genes = _generateGenes(matronId, sireId);
-        Cobra memory cobra = Cobra(matronId, sireId, rarity, genes);
+        uint8 genes = _generateGenes(owner);
+        Cobra memory cobra = Cobra(rarity, genes);
 
         cobras.push(cobra);
         uint256 cobraId = _cobraIds.current();
@@ -134,21 +110,11 @@ contract CobraToken is ERC721 {
 
         super._mint(owner, cobraId);
 
-        emit Birth(
-            owner,
-            cobraId,
-            cobra.matronId,
-            cobra.sireId,
-            cobra.rarity,
-            cobra.genes
-        );
+        emit Birth(owner, cobraId, cobra.rarity, cobra.genes);
     }
 
-    function _generateGenes(uint256 matronId, uint256 sireId)
-        internal
-        pure
-        returns (uint8)
-    {
-        return (uint8(matronId + sireId) % 6) + 1;
+    function _generateGenes(address owner) internal pure returns (uint8) {
+        uint64 magicNumber = 42;
+        return (uint8(uint160(owner) + magicNumber));
     }
 }

@@ -53,17 +53,12 @@ task(
   .addParam('address', 'The CobraToken contract address')
   .setAction(async (args, hre) => {
     const id = 1234
-    const matronId = 444
-    const sireId = 222
     const cbFuncName = 'createCobra'
 
     const [owner, oracle] = await hre.ethers.getSigners()
     const cobraToken = await hre.ethers.getContractAt('CobraToken', args.address)
 
-    const customData = hre.ethers.utils.defaultAbiCoder.encode(
-      ['address', 'uint256', 'uint256'],
-      [owner.address, matronId, sireId]
-    )
+    const customData = hre.ethers.utils.defaultAbiCoder.encode(['address'], [owner.address])
 
     // Rolling the dice...
     const result = 42
@@ -77,12 +72,10 @@ task(
       cobraToken.once(
         'Birth',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (owner: any, cobraId: any, matronId: any, sireId: any, rarity: any, genes: any) => {
+        (owner: any, cobraId: any, rarity: any, genes: any) => {
           console.log('--- Successfully minted Cobra ---')
           console.log('Owner:', owner)
           console.log('CobraId:', cobraId.toString())
-          console.log('Matron:', matronId.toString())
-          console.log('Sire:', sireId.toString())
           console.log('Rarity:', rarity.toString())
           console.log('Genes:', genes.toString())
           resolve()

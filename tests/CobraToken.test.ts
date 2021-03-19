@@ -72,10 +72,7 @@ describe('CobraToken', function () {
             customData: any
           ) => {
             const [min, max] = ethers.utils.defaultAbiCoder.decode(['uint64', 'uint64'], jobArgs)
-            const [owner, matronId, sireId] = ethers.utils.defaultAbiCoder.decode(
-              ['address', 'uint256', 'uint256'],
-              customData
-            )
+            const [owner] = ethers.utils.defaultAbiCoder.decode(['address'], customData)
 
             expect(sender).equal(cobraToken.address)
             expect(id).equal(0)
@@ -84,8 +81,6 @@ describe('CobraToken', function () {
             expect(min).equal(0)
             expect(max).equal(999999999)
             expect(owner).equal(userAccount1.address)
-            expect(matronId).equal(0)
-            expect(sireId).equal(0)
 
             resolve()
           }
@@ -109,13 +104,11 @@ describe('CobraToken', function () {
       })
 
       const cobraId = 0
-      const matronId = 0
-      const sireId = 0
       const rarity = 42
-      const genes = 1
+      const genes = 144
       await expect(oracleResponderMock(oracleAccount, oracle, cobraToken))
         .to.emit(cobraToken, 'Birth')
-        .withArgs(userAccount1.address, cobraId, matronId, sireId, rarity, genes)
+        .withArgs(userAccount1.address, cobraId, rarity, genes)
     })
   })
 
@@ -129,17 +122,13 @@ describe('CobraToken', function () {
 
     it("should return a Cobra's details", async () => {
       const cobraId = 0
-      const matronId = 0
-      const sireId = 0
-      const genes = 1
+      const genes = 144
 
       const details = await cobraToken.getDetails(cobraId)
 
       expect(details[0]).to.equal(cobraId)
-      expect(details[1]).to.equal(matronId)
-      expect(details[2]).to.equal(sireId)
-      expect(details[3]).to.be.within(0, 255)
-      expect(details[4]).to.equal(genes)
+      expect(details[1]).to.equal(42)
+      expect(details[2]).to.equal(genes)
     })
   })
 
