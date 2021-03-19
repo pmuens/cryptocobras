@@ -4,45 +4,80 @@ pragma solidity >=0.8.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+import "./Oracle.sol";
+
 contract CobraToken is ERC721 {
     using Counters for Counters.Counter;
 
+    Oracle private _oracle;
+
     Counters.Counter private _cobraIds;
-    Counters.Counter private _randNonce;
+    Counters.Counter private _requestIds;
 
     struct Cobra {
         uint256 matronId;
         uint256 sireId;
-        uint8 rarity;
+        uint64 rarity;
         uint8 genes;
     }
 
     Cobra[] public cobras;
+
+    event Success(address owner);
 
     event Birth(
         address owner,
         uint256 cobraId,
         uint256 matronId,
         uint256 sireId,
-        uint8 rarity,
+        uint64 rarity,
         uint8 genes
     );
 
-    // solhint-disable-next-line no-empty-blocks
-    constructor() ERC721("Cobras", "CBR") {}
-
-    function buy() external payable returns (uint256) {
-        require(msg.value == 0.2 ether, "A Cobra costs exactly 0.2 ETH");
-        return _createCobra(0, 0, msg.sender);
+    constructor(address oracleAddress) ERC721("Cobras", "CBR") {
+        _oracle = Oracle(oracleAddress);
     }
 
-    function breed(uint256 matronId, uint256 sireId)
-        external
-        payable
-        returns (uint256)
-    {
+    function buy() external payable {
+        require(msg.value == 0.2 ether, "A Cobra costs exactly 0.2 ETH");
+
+        address owner = msg.sender;
+        uint256 matronId = 0;
+        uint256 sireId = 0;
+
+        uint64 min = 0;
+        uint64 max = 999999999;
+
+        uint256 id = _requestIds.current();
+        string memory jobName = "random";
+        bytes memory jobArgs = abi.encode(min, max);
+        string memory cbFuncName = "createCobra";
+        bytes memory customData = abi.encode(owner, matronId, sireId);
+
+        _oracle.getExternalData(id, jobName, jobArgs, cbFuncName, customData);
+        _requestIds.increment();
+
+        emit Success(msg.sender);
+    }
+
+    function breed(uint256 matronId, uint256 sireId) external payable {
         require(msg.value == 0.05 ether, "Breeding Cobras costs 0.05 ETH");
-        return _createCobra(matronId, sireId, msg.sender);
+
+        address owner = msg.sender;
+
+        uint64 min = 0;
+        uint64 max = 999999999;
+
+        uint256 id = _requestIds.current();
+        string memory jobName = "random";
+        bytes memory jobArgs = abi.encode(min, max);
+        string memory cbFuncName = "createCobra";
+        bytes memory customData = abi.encode(owner, matronId, sireId);
+
+        _oracle.getExternalData(id, jobName, jobArgs, cbFuncName, customData);
+        _requestIds.increment();
+
+        emit Success(msg.sender);
     }
 
     function getDetails(uint256 cobraId)
@@ -52,7 +87,7 @@ contract CobraToken is ERC721 {
             uint256,
             uint256,
             uint256,
-            uint8,
+            uint64,
             uint8
         )
     {
@@ -86,40 +121,31 @@ contract CobraToken is ERC721 {
         }
     }
 
-    function _generateGenes(uint256 matronId, uint256 sireId)
-        internal
-        pure
-        returns (uint8)
-    {
-        return (uint8(matronId + sireId) % 6) + 1;
-    }
+    // TODO: Update so that only the Oracle can call it
+    function createCobra(bytes calldata response) external {
+        // Decoding the response data
+        uint256 id;
+        uint64 result;
+        bytes memory customData;
+        (id, result, customData) = abi.decode(
+            response,
+            (uint256, uint64, bytes)
+        );
 
-    function _generateRarity() internal returns (uint8) {
-        // TODO: Update source of randomness
-        _randNonce.increment();
-        uint256 rand =
-            uint256(
-                keccak256(
-                    abi.encodePacked(
-                        // solhint-disable-next-line not-rely-on-time
-                        block.timestamp,
-                        msg.sender,
-                        _randNonce.current()
-                    )
-                )
-            );
-        return uint8(rand);
-    }
+        uint64 rarity = result;
 
-    function _createCobra(
-        uint256 matronId,
-        uint256 sireId,
-        address owner
-    ) internal returns (uint256) {
+        // Decoding the custom data passed along the response data
+        address owner;
+        uint256 matronId;
+        uint256 sireId;
+        (owner, matronId, sireId) = abi.decode(
+            customData,
+            (address, uint256, uint256)
+        );
+
         require(owner != address(0), "Owner shouldn't be the 0 address");
 
         uint8 genes = _generateGenes(matronId, sireId);
-        uint8 rarity = _generateRarity();
         Cobra memory cobra = Cobra(matronId, sireId, rarity, genes);
 
         cobras.push(cobra);
@@ -136,7 +162,13 @@ contract CobraToken is ERC721 {
             cobra.rarity,
             cobra.genes
         );
+    }
 
-        return cobraId;
+    function _generateGenes(uint256 matronId, uint256 sireId)
+        internal
+        pure
+        returns (uint8)
+    {
+        return (uint8(matronId + sireId) % 6) + 1;
     }
 }

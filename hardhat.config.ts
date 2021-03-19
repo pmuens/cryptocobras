@@ -12,12 +12,13 @@ task('accounts', 'Prints the list of accounts', async (_, hre) => {
   }
 })
 
-task('deploy', 'Deploys the CobraToken contract', async (_, hre) => {
+task('deploy', 'Deploys the Smart Contracts', async (_, hre) => {
+  const Oracle = await hre.ethers.getContractFactory('Oracle')
+  const oracle = await Oracle.deploy()
   const CobraToken = await hre.ethers.getContractFactory('CobraToken')
-  const cobraToken = await CobraToken.deploy()
+  const cobraToken = await CobraToken.deploy(oracle.address)
 
-  await cobraToken.deployed()
-
+  console.log('Oracle deployed to:', oracle.address)
   console.log('CobraToken deployed to:', cobraToken.address)
 })
 
@@ -33,10 +34,51 @@ task('buy', 'Buys a new Cobra NFT')
 
     await new Promise<void>((resolve) => {
       cobraToken.once(
+        'Success',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (owner: any) => {
+          console.log('--- Successfully bought Cobra ---')
+          console.log('Owner:', owner)
+          console.log('--- Waiting on Oracle to finalize the minting ---')
+          resolve()
+        }
+      )
+    })
+  })
+
+task(
+  'oracle',
+  'Creates a mock Oracle response which invokes the callback function on the Cobra contract'
+)
+  .addParam('address', 'The CobraToken contract address')
+  .setAction(async (args, hre) => {
+    const id = 1234
+    const matronId = 444
+    const sireId = 222
+    const cbFuncName = 'createCobra'
+
+    const [owner, oracle] = await hre.ethers.getSigners()
+    const cobraToken = await hre.ethers.getContractAt('CobraToken', args.address)
+
+    const customData = hre.ethers.utils.defaultAbiCoder.encode(
+      ['address', 'uint256', 'uint256'],
+      [owner.address, matronId, sireId]
+    )
+
+    // Rolling the dice...
+    const result = 42
+    const response = hre.ethers.utils.defaultAbiCoder.encode(
+      ['uint256', 'uint64', 'bytes'],
+      [id, result, customData]
+    )
+    await cobraToken.connect(oracle)[cbFuncName](response)
+
+    await new Promise<void>((resolve) => {
+      cobraToken.once(
         'Birth',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (owner: any, cobraId: any, matronId: any, sireId: any, rarity: any, genes: any) => {
-          console.log('--- Successfully bought Cobra ---')
+          console.log('--- Successfully minted Cobra ---')
           console.log('Owner:', owner)
           console.log('CobraId:', cobraId.toString())
           console.log('Matron:', matronId.toString())
