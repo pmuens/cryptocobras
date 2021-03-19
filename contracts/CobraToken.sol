@@ -60,26 +60,6 @@ contract CobraToken is ERC721 {
         emit Success(msg.sender);
     }
 
-    function breed(uint256 matronId, uint256 sireId) external payable {
-        require(msg.value == 0.05 ether, "Breeding Cobras costs 0.05 ETH");
-
-        address owner = msg.sender;
-
-        uint64 min = 0;
-        uint64 max = 999999999;
-
-        uint256 id = _requestIds.current();
-        string memory jobName = "random";
-        bytes memory jobArgs = abi.encode(min, max);
-        string memory cbFuncName = "createCobra";
-        bytes memory customData = abi.encode(owner, matronId, sireId);
-
-        _oracle.getExternalData(id, jobName, jobArgs, cbFuncName, customData);
-        _requestIds.increment();
-
-        emit Success(msg.sender);
-    }
-
     function getDetails(uint256 cobraId)
         external
         view
