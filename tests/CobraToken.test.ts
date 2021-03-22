@@ -126,9 +126,10 @@ describe('CobraToken', function () {
 
       const details = await cobraToken.getDetails(cobraId)
 
-      expect(details[0]).to.equal(cobraId)
-      expect(details[1]).to.equal(42)
-      expect(details[2]).to.equal(genes)
+      expect(details[0]).to.equal(userAccount1.address)
+      expect(details[1]).to.equal(cobraId)
+      expect(details[2]).to.equal(42)
+      expect(details[3]).to.equal(genes)
     })
   })
 

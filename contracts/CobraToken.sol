@@ -15,6 +15,8 @@ contract CobraToken is ERC721 {
     Counters.Counter private _requestIds;
 
     struct Cobra {
+        address owner;
+        uint256 id;
         uint64 rarity;
         uint8 genes;
     }
@@ -23,7 +25,7 @@ contract CobraToken is ERC721 {
 
     event Success(address owner);
 
-    event Birth(address owner, uint256 cobraId, uint64 rarity, uint8 genes);
+    event Birth(address owner, uint256 id, uint64 rarity, uint8 genes);
 
     constructor(address oracleAddress) ERC721("Cobras", "CBR") {
         _oracle = Oracle(oracleAddress);
@@ -53,13 +55,14 @@ contract CobraToken is ERC721 {
         external
         view
         returns (
+            address,
             uint256,
             uint64,
             uint8
         )
     {
         Cobra storage cobra = cobras[cobraId];
-        return (cobraId, cobra.rarity, cobra.genes);
+        return (cobra.owner, cobra.id, cobra.rarity, cobra.genes);
     }
 
     function listOwned() external view returns (uint256[] memory) {
@@ -101,16 +104,16 @@ contract CobraToken is ERC721 {
 
         require(owner != address(0), "Owner shouldn't be the 0 address");
 
+        uint256 cobraId = _cobraIds.current();
         uint8 genes = _generateGenes(owner);
-        Cobra memory cobra = Cobra(rarity, genes);
+        Cobra memory cobra = Cobra(owner, cobraId, rarity, genes);
 
         cobras.push(cobra);
-        uint256 cobraId = _cobraIds.current();
         _cobraIds.increment();
 
         super._mint(owner, cobraId);
 
-        emit Birth(owner, cobraId, cobra.rarity, cobra.genes);
+        emit Birth(owner, cobraId, rarity, genes);
     }
 
     function _generateGenes(address owner) internal pure returns (uint8) {
