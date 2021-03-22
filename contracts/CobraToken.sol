@@ -14,6 +14,8 @@ contract CobraToken is ERC721 {
     Counters.Counter private _cobraIds;
     Counters.Counter private _requestIds;
 
+    mapping(uint256 => bool) private _processedResponses;
+
     struct Cobra {
         address owner;
         uint256 id;
@@ -24,7 +26,7 @@ contract CobraToken is ERC721 {
     Cobra[] public cobras;
 
     event Success(address owner);
-
+    event Skipping(uint256 id);
     event Birth(address owner, uint256 id, uint64 rarity, uint8 genes);
 
     constructor(address oracleAddress) ERC721("Cobras", "CBR") {
@@ -87,30 +89,35 @@ contract CobraToken is ERC721 {
 
     // TODO: Update so that only the Oracle can call it
     function createCobra(
-        uint256, // `id`
+        uint256 id,
         bytes calldata result,
         bytes calldata customData
     ) external {
-        // Decoding the result data
-        uint64 rarity;
-        (rarity) = abi.decode(result, (uint64));
+        // Check if response was already processed
+        if (!_processedResponses[id]) {
+            uint64 rarity;
+            (rarity) = abi.decode(result, (uint64));
 
-        // Decoding the custom data passed along the response data
-        address owner;
-        (owner) = abi.decode(customData, (address));
+            address owner;
+            (owner) = abi.decode(customData, (address));
 
-        require(owner != address(0), "Owner shouldn't be the 0 address");
+            require(owner != address(0), "Owner shouldn't be the 0 address");
 
-        uint256 cobraId = _cobraIds.current();
-        uint8 genes = _generateGenes(owner);
-        Cobra memory cobra = Cobra(owner, cobraId, rarity, genes);
+            uint256 cobraId = _cobraIds.current();
+            uint8 genes = _generateGenes(owner);
+            Cobra memory cobra = Cobra(owner, cobraId, rarity, genes);
 
-        cobras.push(cobra);
-        _cobraIds.increment();
+            cobras.push(cobra);
+            _cobraIds.increment();
 
-        super._mint(owner, cobraId);
+            super._mint(owner, cobraId);
 
-        emit Birth(owner, cobraId, rarity, genes);
+            emit Birth(owner, cobraId, rarity, genes);
+
+            _processedResponses[id] = true;
+            return;
+        }
+        emit Skipping(id);
     }
 
     function _generateGenes(address owner) internal pure returns (uint8) {

@@ -9,11 +9,17 @@ import { ethers } from 'hardhat'
 // TODO: Fix slow assertions on emitted event data
 // TODO: Don't run assertions outside the "core" test environment
 
-async function oracleResponderMock(oracleAccount: any, oracle: any, cobraToken: any) {
+async function oracleResponderMock(
+  oracleAccount: any,
+  oracle: any,
+  cobraToken: any,
+  requestId?: any
+) {
   return new Promise<void>((resolve) => {
     oracle.once(
       'DataRequest',
       async (_: any, id: any, __: any, ___: any, cbFuncName: any, customData: any) => {
+        id = requestId || id
         // Rolling the dice...
         const number = 42
         const result = ethers.utils.defaultAbiCoder.encode(['uint64'], [number])
@@ -106,6 +112,28 @@ describe('CobraToken', function () {
       await expect(oracleResponderMock(oracleAccount, oracle, cobraToken))
         .to.emit(cobraToken, 'Birth')
         .withArgs(userAccount1.address, cobraId, rarity, genes)
+    })
+
+    it('should not process the same response multiple times', async () => {
+      const requestId = 42
+
+      // Buying a Cobra the first time
+      await cobraToken.connect(userAccount1).buy({
+        value: ethers.utils.parseEther('0.2')
+      })
+      await expect(oracleResponderMock(oracleAccount, oracle, cobraToken, requestId)).to.emit(
+        cobraToken,
+        'Birth'
+      )
+
+      // Buying a Cobra for the second time
+      await cobraToken.connect(userAccount1).buy({
+        value: ethers.utils.parseEther('0.2')
+      })
+      // Glitch: Sending a response for the first request a second time
+      await expect(oracleResponderMock(oracleAccount, oracle, cobraToken, requestId))
+        .to.emit(cobraToken, 'Skipping')
+        .withArgs(requestId)
     })
   })
 
