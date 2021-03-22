@@ -131,9 +131,9 @@ describe('CobraToken', function () {
         value: ethers.utils.parseEther('0.2')
       })
       // Glitch: Sending a response for the first request a second time
-      await expect(oracleResponderMock(oracleAccount, oracle, cobraToken, requestId))
-        .to.emit(cobraToken, 'Skipping')
-        .withArgs(requestId)
+      await expect(
+        oracleResponderMock(oracleAccount, oracle, cobraToken, requestId)
+      ).to.be.revertedWith('already processed')
     })
   })
 

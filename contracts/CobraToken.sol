@@ -26,7 +26,6 @@ contract CobraToken is ERC721 {
     Cobra[] public cobras;
 
     event Success(address owner);
-    event Skipping(uint256 id);
     event Birth(address owner, uint256 id, uint64 rarity, uint8 genes);
 
     constructor(address oracleAddress) ERC721("Cobras", "CBR") {
@@ -93,31 +92,28 @@ contract CobraToken is ERC721 {
         bytes calldata result,
         bytes calldata customData
     ) external {
-        // Check if response was already processed
-        if (!_processedResponses[id]) {
-            uint64 rarity;
-            (rarity) = abi.decode(result, (uint64));
+        require(!_processedResponses[id], "Response already processed");
 
-            address owner;
-            (owner) = abi.decode(customData, (address));
+        uint64 rarity;
+        (rarity) = abi.decode(result, (uint64));
 
-            require(owner != address(0), "Owner shouldn't be the 0 address");
+        address owner;
+        (owner) = abi.decode(customData, (address));
 
-            uint256 cobraId = _cobraIds.current();
-            uint8 genes = _generateGenes(owner);
-            Cobra memory cobra = Cobra(owner, cobraId, rarity, genes);
+        require(owner != address(0), "Owner shouldn't be the 0 address");
 
-            cobras.push(cobra);
-            _cobraIds.increment();
+        uint256 cobraId = _cobraIds.current();
+        uint8 genes = _generateGenes(owner);
+        Cobra memory cobra = Cobra(owner, cobraId, rarity, genes);
 
-            super._mint(owner, cobraId);
+        cobras.push(cobra);
+        _cobraIds.increment();
 
-            emit Birth(owner, cobraId, rarity, genes);
+        super._mint(owner, cobraId);
 
-            _processedResponses[id] = true;
-            return;
-        }
-        emit Skipping(id);
+        emit Birth(owner, cobraId, rarity, genes);
+
+        _processedResponses[id] = true;
     }
 
     function _generateGenes(address owner) internal pure returns (uint8) {
