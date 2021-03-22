@@ -61,12 +61,9 @@ task(
     const customData = hre.ethers.utils.defaultAbiCoder.encode(['address'], [owner.address])
 
     // Rolling the dice...
-    const result = 42
-    const response = hre.ethers.utils.defaultAbiCoder.encode(
-      ['uint256', 'uint64', 'bytes'],
-      [id, result, customData]
-    )
-    await cobraToken.connect(oracle)[cbFuncName](response)
+    const number = 42
+    const result = hre.ethers.utils.defaultAbiCoder.encode(['uint64'], [number])
+    await cobraToken.connect(oracle)[cbFuncName](id, result, customData)
 
     await new Promise<void>((resolve) => {
       cobraToken.once(

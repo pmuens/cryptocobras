@@ -15,12 +15,9 @@ async function oracleResponderMock(oracleAccount: any, oracle: any, cobraToken: 
       'DataRequest',
       async (_: any, id: any, __: any, ___: any, cbFuncName: any, customData: any) => {
         // Rolling the dice...
-        const result = 42
-        const response = ethers.utils.defaultAbiCoder.encode(
-          ['uint256', 'uint64', 'bytes'],
-          [id, result, customData]
-        )
-        resolve(cobraToken.connect(oracleAccount)[cbFuncName](response))
+        const number = 42
+        const result = ethers.utils.defaultAbiCoder.encode(['uint64'], [number])
+        resolve(cobraToken.connect(oracleAccount)[cbFuncName](id, result, customData))
       }
     )
   })

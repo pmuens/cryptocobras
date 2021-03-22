@@ -86,17 +86,14 @@ contract CobraToken is ERC721 {
     }
 
     // TODO: Update so that only the Oracle can call it
-    function createCobra(bytes calldata response) external {
-        // Decoding the response data
-        uint256 id;
-        uint64 result;
-        bytes memory customData;
-        (id, result, customData) = abi.decode(
-            response,
-            (uint256, uint64, bytes)
-        );
-
-        uint64 rarity = result;
+    function createCobra(
+        uint256, // `id`
+        bytes calldata result,
+        bytes calldata customData
+    ) external {
+        // Decoding the result data
+        uint64 rarity;
+        (rarity) = abi.decode(result, (uint64));
 
         // Decoding the custom data passed along the response data
         address owner;
