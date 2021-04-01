@@ -1,7 +1,9 @@
 /* eslint-disable no-console */
 
+import '@typechain/hardhat'
 import '@nomiclabs/hardhat-waffle'
 import '@nomiclabs/hardhat-ethers'
+
 import { HardhatUserConfig, task } from 'hardhat/config'
 
 task('accounts', 'Prints the list of accounts', async (_, hre) => {

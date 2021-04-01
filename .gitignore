@@ -1,6 +1,7 @@
 tmp/
 artifacts/
 cache/
+typechain/
 
 # Created by https://www.toptal.com/developers/gitignore/api/linux,macos,windows,vim,emacs,intellij+all,sublimetext,code,node
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,macos,windows,vim,emacs,intellij+all,sublimetext,code,node

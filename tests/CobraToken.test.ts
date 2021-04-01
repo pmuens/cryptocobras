@@ -6,13 +6,16 @@ import '@nomiclabs/hardhat-waffle'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
 
+import { Oracle } from '../typechain/Oracle'
+import { CobraToken } from '../typechain/CobraToken'
+
 // TODO: Fix slow assertions on emitted event data
 // TODO: Don't run assertions outside the "core" test environment
 
 async function oracleResponderMock(
   oracleAccount: any,
-  oracle: any,
-  cobraToken: any,
+  oracle: Oracle,
+  cobraToken: CobraToken,
   requestId?: any
 ) {
   return new Promise<void>((resolve) => {
@@ -30,18 +33,20 @@ async function oracleResponderMock(
 }
 
 describe('CobraToken', function () {
-  let oracle: any
-  let cobraToken: any
+  let oracle: Oracle
+  let cobraToken: CobraToken
   let userAccount1: any
   let userAccount2: any
   let oracleAccount: any
 
   beforeEach(async () => {
-    const Oracle = await ethers.getContractFactory('Oracle')
-    oracle = await Oracle.deploy()
-    const CobraToken = await ethers.getContractFactory('CobraToken')
-    cobraToken = await CobraToken.deploy(oracle.address)
     ;[userAccount1, userAccount2, oracleAccount] = await ethers.getSigners()
+    const oracleFactory = await ethers.getContractFactory('Oracle', userAccount1)
+    oracle = (await oracleFactory.deploy()) as Oracle
+    await oracle.deployed()
+    const cobraTokenFactory = await ethers.getContractFactory('CobraToken', userAccount1)
+    cobraToken = (await cobraTokenFactory.deploy(oracle.address)) as CobraToken
+    await cobraToken.deployed()
   })
 
   it('should successfully deploy the CobraToken', async () => {

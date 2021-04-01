@@ -6,14 +6,17 @@ import '@nomiclabs/hardhat-waffle'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
 
+import { Oracle } from '../typechain/Oracle'
+
 describe('Oracle', function () {
-  let oracle: any
+  let oracle: Oracle
   let account: any
 
   beforeEach(async () => {
-    const Oracle = await ethers.getContractFactory('Oracle')
-    oracle = await Oracle.deploy()
     ;[account] = await ethers.getSigners()
+    const oracleFactory = await ethers.getContractFactory('Oracle', account)
+    oracle = (await oracleFactory.deploy()) as Oracle
+    await oracle.deployed()
   })
 
   it('should successfully deploy the contract', async () => {
