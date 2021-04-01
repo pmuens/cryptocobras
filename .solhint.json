@@ -9,6 +9,7 @@
     "modifier-name-mixedcase": "error",
     "private-vars-leading-underscore": "error",
     "max-line-length": ["warn", 150],
-    "reason-string": ["warn", { "maxLength": 50 }]
+    "reason-string": ["warn", { "maxLength": 50 }],
+    "compiler-version": ["error", ">=0.8.0"]
   }
 }
