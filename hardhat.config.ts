@@ -15,11 +15,17 @@ task('accounts', 'Prints the list of accounts', async (_, hre) => {
 })
 
 task('deploy', 'Deploys the Smart Contracts', async (_, hre) => {
-  const Oracle = await hre.ethers.getContractFactory('Oracle')
-  const oracle = await Oracle.deploy()
-  const CobraToken = await hre.ethers.getContractFactory('CobraToken')
-  const cobraToken = await CobraToken.deploy(oracle.address)
+  await hre.run('compile')
 
+  const oracleFactory = await hre.ethers.getContractFactory('Oracle')
+  const oracle = await oracleFactory.deploy()
+  await oracle.deployed()
+
+  const cobraTokenFactory = await hre.ethers.getContractFactory('CobraToken')
+  const cobraToken = await cobraTokenFactory.deploy(oracle.address)
+  await cobraToken.deployed()
+
+  console.log()
   console.log('Oracle deployed to:', oracle.address)
   console.log('CobraToken deployed to:', cobraToken.address)
 })
