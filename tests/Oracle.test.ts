@@ -1,16 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import '@nomiclabs/hardhat-ethers'
 import '@nomiclabs/hardhat-waffle'
 
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 
 import { Oracle } from '../typechain/Oracle'
 
 describe('Oracle', function () {
   let oracle: Oracle
-  let account: any
+  let account: SignerWithAddress
 
   beforeEach(async () => {
     ;[account] = await ethers.getSigners()

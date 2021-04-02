@@ -5,6 +5,7 @@ import '@nomiclabs/hardhat-waffle'
 
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 
 import { Oracle } from '../typechain/Oracle'
 import { CobraToken } from '../typechain/CobraToken'
@@ -13,7 +14,7 @@ import { CobraToken } from '../typechain/CobraToken'
 // TODO: Don't run assertions outside the "core" test environment
 
 async function oracleResponderMock(
-  oracleAccount: any,
+  oracleAccount: SignerWithAddress,
   oracle: Oracle,
   cobraToken: CobraToken,
   requestId?: any
@@ -35,9 +36,9 @@ async function oracleResponderMock(
 describe('CobraToken', function () {
   let oracle: Oracle
   let cobraToken: CobraToken
-  let userAccount1: any
-  let userAccount2: any
-  let oracleAccount: any
+  let userAccount1: SignerWithAddress
+  let userAccount2: SignerWithAddress
+  let oracleAccount: SignerWithAddress
 
   beforeEach(async () => {
     ;[userAccount1, userAccount2, oracleAccount] = await ethers.getSigners()
